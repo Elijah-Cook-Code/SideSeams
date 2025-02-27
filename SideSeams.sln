@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SideSeams", "SideSeams.csproj", "{7D797E35-437C-4654-9987-8242FBF5169B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "..\Data\Data.csproj", "{BD36AC39-2FDD-42E9-A09E-D19B97B35AF5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D797E35-437C-4654-9987-8242FBF5169B}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{BD36AC39-2FDD-42E9-A09E-D19B97B35AF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD36AC39-2FDD-42E9-A09E-D19B97B35AF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD36AC39-2FDD-42E9-A09E-D19B97B35AF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD36AC39-2FDD-42E9-A09E-D19B97B35AF5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2EE4EEBD-D49E-43E1-932F-390C31ACD204}
+	EndGlobalSection
+EndGlobal

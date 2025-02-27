@@ -1,0 +1,186 @@
+﻿@page "/clients"
+@inject SideSeams.Data.Services.ClientServices ClientService
+@using SideSeams.Data.Models;
+@using MudBlazor;
+
+
+<h3>Clients</h3>
+
+@if (clients == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <ul>
+        @foreach (var client in clients)
+        {
+            
+            <li>
+                @if (editingClientId == client.Id)
+                {
+                    <!-- Editing Mode -->
+                    <input type="text" @bind="editName" />
+                    <input type="text" @bind="editNotes" />
+
+                    <h4>Edit Measurements</h4>
+                    @if (editMeasurements != null)
+                    {
+                        <input type="number" @bind="editMeasurements.A_ChestMeasurement" placeholder="Chest Measurement" />
+                        <input type="number" @bind="editMeasurements.B_SeatMeasurement" placeholder="Seat Measurement" />
+                        <input type="number" @bind="editMeasurements.C_WaistMeasurement" placeholder="Waist Measurement" />
+                        <input type="number" @bind="editMeasurements.D_TrouserMeasurement" placeholder="Trouser Measurement" />
+                        <input type="number" @bind="editMeasurements.E_F_HalfBackMeasurement" placeholder="Half Back Measurement" />
+                        <input type="number" @bind="editMeasurements.E_I_SleeveLengthTwoPieceMeasurement" placeholder="Sleeve Length (Two Piece)" />
+                        <input type="number" @bind="editMeasurements.G_H_BackNeckToWaistMeasurement" placeholder="Back Neck to Waist" />
+                        <input type="number" @bind="editMeasurements.G_I_SyceDepthMeasurement" placeholder="Syce Depth" />
+                        <input type="number" @bind="editMeasurements.I_L_SleeveLengthOnePieceMeasurement" placeholder="Sleeve Length (One Piece)" />
+                        <input type="number" @bind="editMeasurements.N_InsideLegMeasurement" placeholder="Inside Leg" />
+                        <input type="number" @bind="editMeasurements.P_Q_BodyRiseMeasurement" placeholder="Body Rise" />
+                        <input type="number" @bind="editMeasurements.R_CloseWristMeasurement" placeholder="Close Wrist" />
+                    }
+                    else
+                    {
+                        <p>No measurements availiable</p>
+                    }
+
+                    <button @onclick="SaveClient">💾 Save</button>
+                    <button @onclick="CancelEdit">❌ Cancel</button>
+                }
+                else
+                {
+                <!-- Normal Display Mode -->
+                    @($"{client.Name} - {client.Notes}")
+
+                <button @onclick="() => EditClient(client)">Edit</button>
+                <button @onclick="() => DeleteClient(client.Id)">Delete</button>
+                }
+                
+            </li>
+        }
+    </ul>
+}
+
+<h4>Add New Client</h4>
+<input type="text" @bind="newClientName" placeholder="Client Name" />
+<input type="text" @bind="newClientNotes" placeholder="Notes" />
+
+<!-- Measurements -->
+<input type="number" @bind="newMeasurements.A_ChestMeasurement" placeholder="Chest Measurement" />
+<input type="number" @bind="newMeasurements.B_SeatMeasurement" placeholder="Seat Measurement" />
+<input type="number" @bind="newMeasurements.C_WaistMeasurement" placeholder="Waist Measurement" />
+<input type="number" @bind="newMeasurements.D_TrouserMeasurement" placeholder="Trouser Measurement" />
+<input type="number" @bind="newMeasurements.E_F_HalfBackMeasurement" placeholder="Half Back Measurement" />
+<input type="number" @bind="newMeasurements.E_I_SleeveLengthTwoPieceMeasurement" placeholder="Sleeve Length (Two Piece)" />
+<input type="number" @bind="newMeasurements.G_H_BackNeckToWaistMeasurement" placeholder="Back Neck to Waist" />
+<input type="number" @bind="newMeasurements.G_I_SyceDepthMeasurement" placeholder="Syce Depth" />
+<input type="number" @bind="newMeasurements.I_L_SleeveLengthOnePieceMeasurement" placeholder="Sleeve Length (One Piece)" />
+<input type="number" @bind="newMeasurements.N_InsideLegMeasurement" placeholder="Inside Leg" />
+<input type="number" @bind="newMeasurements.P_Q_BodyRiseMeasurement" placeholder="Body Rise" />
+<input type="number" @bind="newMeasurements.R_CloseWristMeasurement" placeholder="Close Wrist" />
+
+<button @onclick="AddClient">Add Client</button>
+
+@code {
+    private List<ClientInfo> clients = new List<ClientInfo>();
+    private int? editingClientId = null;
+    private string editName = "";
+    private string editNotes = "";
+
+    // New client input fields
+    private string newClientName = "";
+    private string newClientNotes = "";
+
+    private ClientMeasurements newMeasurements = new ClientMeasurements(); // New object for measurements
+    private ClientMeasurements editMeasurements = new ClientMeasurements();
+
+    protected override async Task OnInitializedAsync()
+    {
+        clients = await ClientService.GetClientsAsync();
+    }
+
+    private async Task AddClient()
+    {
+        await ClientService.AddClientAsync(newClientName, newClientNotes, new List<ClientMeasurements> { newMeasurements });
+        clients = await ClientService.GetClientsAsync();
+
+        // Reset Input Fields
+        newClientName = "";
+        newClientNotes = "";
+        newMeasurements = new ClientMeasurements(); // Reset measurements
+    }
+
+    private async Task DeleteClient(int clientId)
+    {
+        await ClientService.DeleteClientAsync(clientId);
+        clients = await ClientService.GetClientsAsync(); // Refresh list after deletion
+    }
+    private void EditClient(ClientInfo client)
+    {
+        editingClientId = client.Id;
+        editName = client.Name;
+        editNotes = client.Notes;
+
+        // Extract the first measurement from the list, or create a new one if none exist
+        editMeasurements = client.Measurements?.FirstOrDefault() ?? new ClientMeasurements();
+    }
+
+    private async Task SaveClient()
+    {
+        if (editingClientId != null)
+        {
+            var client = clients.FirstOrDefault(c => c.Id == editingClientId);
+            if (client != null && client.Measurements.Any())
+            {
+                var measurement = client.Measurements.First();
+
+                // Update the measurement values
+                measurement.A_ChestMeasurement = editMeasurements.A_ChestMeasurement;
+                measurement.B_SeatMeasurement = editMeasurements.B_SeatMeasurement;
+                measurement.C_WaistMeasurement = editMeasurements.C_WaistMeasurement;
+                measurement.D_TrouserMeasurement = editMeasurements.D_TrouserMeasurement;
+                measurement.E_F_HalfBackMeasurement = editMeasurements.E_F_HalfBackMeasurement;
+                measurement.E_I_SleeveLengthTwoPieceMeasurement = editMeasurements.E_I_SleeveLengthTwoPieceMeasurement;
+                measurement.G_H_BackNeckToWaistMeasurement = editMeasurements.G_H_BackNeckToWaistMeasurement;
+                measurement.G_I_SyceDepthMeasurement = editMeasurements.G_I_SyceDepthMeasurement;
+                measurement.I_L_SleeveLengthOnePieceMeasurement = editMeasurements.I_L_SleeveLengthOnePieceMeasurement;
+                measurement.N_InsideLegMeasurement = editMeasurements.N_InsideLegMeasurement;
+                measurement.P_Q_BodyRiseMeasurement = editMeasurements.P_Q_BodyRiseMeasurement;
+                measurement.R_CloseWristMeasurement = editMeasurements.R_CloseWristMeasurement;
+
+                await ClientService.UpdateClientAsync(editingClientId.Value, editName, editNotes, measurement);
+            }
+            else if (client != null)
+            {
+                // If no measurements exist, add new measurements
+                client.Measurements.Add(new ClientMeasurements
+                    {
+                        A_ChestMeasurement = editMeasurements.A_ChestMeasurement,
+                        B_SeatMeasurement = editMeasurements.B_SeatMeasurement,
+                        C_WaistMeasurement = editMeasurements.C_WaistMeasurement,
+                        D_TrouserMeasurement = editMeasurements.D_TrouserMeasurement,
+                        E_F_HalfBackMeasurement = editMeasurements.E_F_HalfBackMeasurement,
+                        E_I_SleeveLengthTwoPieceMeasurement = editMeasurements.E_I_SleeveLengthTwoPieceMeasurement,
+                        G_H_BackNeckToWaistMeasurement = editMeasurements.G_H_BackNeckToWaistMeasurement,
+                        G_I_SyceDepthMeasurement = editMeasurements.G_I_SyceDepthMeasurement,
+                        I_L_SleeveLengthOnePieceMeasurement = editMeasurements.I_L_SleeveLengthOnePieceMeasurement,
+                        N_InsideLegMeasurement = editMeasurements.N_InsideLegMeasurement,
+                        P_Q_BodyRiseMeasurement = editMeasurements.P_Q_BodyRiseMeasurement,
+                        R_CloseWristMeasurement = editMeasurements.R_CloseWristMeasurement
+                    });
+
+                await ClientService.UpdateClientAsync(editingClientId.Value, editName, editNotes, client.Measurements.First());
+            }
+
+            clients = await ClientService.GetClientsAsync(); // Refresh list
+            editingClientId = null; // Exit edit mode
+        }
+    }
+
+
+
+    private void CancelEdit()
+    {
+        editingClientId = null; // Cancel edit mode
+    }
+}
