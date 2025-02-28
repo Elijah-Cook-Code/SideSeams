@@ -4,6 +4,8 @@ using SideSeams.Data;
 using SideSeams.Data.Services;
 using MudBlazor.Services; // ✅ Import MudBlazor
 using Data.Repositories;
+using SideSeams.Testing;
+
 
 
 namespace SideSeams
@@ -38,13 +40,19 @@ namespace SideSeams
 #endif
             var app = builder.Build();
 
+
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ClientContext>();
                 db.Database.EnsureCreated();
             }
+            RunTestAsync(app.Services);
 
             return app;
+        }
+        private static async void RunTestAsync(IServiceProvider services)
+        {
+            await TestClientRepository.RunTests(services);
         }
     }
 }
