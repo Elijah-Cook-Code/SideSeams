@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SideSeams.Data;
 using SideSeams.Data.Services;
 using MudBlazor.Services; // ✅ Import MudBlazor
+using Data.Repositories;
+
 
 namespace SideSeams
 {
@@ -27,8 +29,8 @@ namespace SideSeams
             options.UseSqlite($"Data Source={dbPath}"));
 
             builder.Services.AddScoped<ClientServices>();
-            
-            
+            builder.Services.AddScoped<IClientRepository, ClientRepository>(); // ✅ Register repository
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
