@@ -1,186 +1,160 @@
 ﻿@page "/clients"
+@using MudBlazor
+@using SideSeams.Data.Models
 @inject SideSeams.Data.Services.ClientServices ClientService
-@using SideSeams.Data.Models;
-@using MudBlazor;
 
 
-<h3>Clients</h3>
+<MudContainer>
+    <MudCard Elevation="4">
+        <!-- Card Header with Search & Add Client Button -->
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">Client Information</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_quickFilter" Placeholder="Search Clients..."
+                          Adornment="Adornment.Start" Immediate="true"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+            </MudTextField>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ToggleForm">
+                @(showForm ? "Cancel" : "Add Client")
+            </MudButton>
+        </MudCardHeader>
 
-@if (clients == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <ul>
-        @foreach (var client in clients)
-        {
-            
-            <li>
-                @if (editingClientId == client.Id)
-                {
-                    <!-- Editing Mode -->
-                    <input type="text" @bind="editName" />
-                    <input type="text" @bind="editNotes" />
+        <!-- DataGrid Section -->
+        <MudCardContent>
+            <MudDataGrid T="ClientInfo" MultiSelection="true" Items="@clients"
+                         SortMode="SortMode.Multiple" Filterable="true" QuickFilter="FilterClients"
+                         Hideable="true" SelectedItemsChanged="SelectedItemsChanged" Dense="true" Hover="true">
 
-                    <h4>Edit Measurements</h4>
-                    @if (editMeasurements != null)
-                    {
-                        <input type="number" @bind="editMeasurements.A_ChestMeasurement" placeholder="Chest Measurement" />
-                        <input type="number" @bind="editMeasurements.B_SeatMeasurement" placeholder="Seat Measurement" />
-                        <input type="number" @bind="editMeasurements.C_WaistMeasurement" placeholder="Waist Measurement" />
-                        <input type="number" @bind="editMeasurements.D_TrouserMeasurement" placeholder="Trouser Measurement" />
-                        <input type="number" @bind="editMeasurements.E_F_HalfBackMeasurement" placeholder="Half Back Measurement" />
-                        <input type="number" @bind="editMeasurements.E_I_SleeveLengthTwoPieceMeasurement" placeholder="Sleeve Length (Two Piece)" />
-                        <input type="number" @bind="editMeasurements.G_H_BackNeckToWaistMeasurement" placeholder="Back Neck to Waist" />
-                        <input type="number" @bind="editMeasurements.G_I_SyceDepthMeasurement" placeholder="Syce Depth" />
-                        <input type="number" @bind="editMeasurements.I_L_SleeveLengthOnePieceMeasurement" placeholder="Sleeve Length (One Piece)" />
-                        <input type="number" @bind="editMeasurements.N_InsideLegMeasurement" placeholder="Inside Leg" />
-                        <input type="number" @bind="editMeasurements.P_Q_BodyRiseMeasurement" placeholder="Body Rise" />
-                        <input type="number" @bind="editMeasurements.R_CloseWristMeasurement" placeholder="Close Wrist" />
-                    }
-                    else
-                    {
-                        <p>No measurements availiable</p>
-                    }
+                <Columns>
+                    <SelectColumn T="ClientInfo" />
+                    <PropertyColumn Property="x => x.Id" Title="ID" />
+                    <PropertyColumn Property="x => x.Name" Title="Name" />
+                    <PropertyColumn Property="x => x.Date" Title="Date" />
+                    <PropertyColumn Property="x => x.PhoneNumber" Title="Phone" />
+                    <PropertyColumn Property="x => x.Notes" Title="Notes" />
 
-                    <button @onclick="SaveClient">💾 Save</button>
-                    <button @onclick="CancelEdit">❌ Cancel</button>
-                }
-                else
-                {
-                <!-- Normal Display Mode -->
-                    @($"{client.Name} - {client.Notes}")
+                    <!-- Actions Column (Edit & Delete) -->
+                    <TemplateColumn Title="Actions">
+                        <CellTemplate Context="context">
+                            <MudButton Color="Color.Primary" OnClick="@(() => EditClient(context.Item))">
+                                <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                            </MudButton>
 
-                <button @onclick="() => EditClient(client)">Edit</button>
-                <button @onclick="() => DeleteClient(client.Id)">Delete</button>
-                }
-                
-            </li>
-        }
-    </ul>
-}
+                            <MudButton Color="Color.Error" OnClick="@(() => DeleteClient(context.Item))">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                            </MudButton>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
 
-<h4>Add New Client</h4>
-<input type="text" @bind="newClientName" placeholder="Client Name" />
-<input type="text" @bind="newClientNotes" placeholder="Notes" />
+                <PagerContent>
+                    <MudDataGridPager T="ClientInfo" />
+                </PagerContent>
 
-<!-- Measurements -->
-<input type="number" @bind="newMeasurements.A_ChestMeasurement" placeholder="Chest Measurement" />
-<input type="number" @bind="newMeasurements.B_SeatMeasurement" placeholder="Seat Measurement" />
-<input type="number" @bind="newMeasurements.C_WaistMeasurement" placeholder="Waist Measurement" />
-<input type="number" @bind="newMeasurements.D_TrouserMeasurement" placeholder="Trouser Measurement" />
-<input type="number" @bind="newMeasurements.E_F_HalfBackMeasurement" placeholder="Half Back Measurement" />
-<input type="number" @bind="newMeasurements.E_I_SleeveLengthTwoPieceMeasurement" placeholder="Sleeve Length (Two Piece)" />
-<input type="number" @bind="newMeasurements.G_H_BackNeckToWaistMeasurement" placeholder="Back Neck to Waist" />
-<input type="number" @bind="newMeasurements.G_I_SyceDepthMeasurement" placeholder="Syce Depth" />
-<input type="number" @bind="newMeasurements.I_L_SleeveLengthOnePieceMeasurement" placeholder="Sleeve Length (One Piece)" />
-<input type="number" @bind="newMeasurements.N_InsideLegMeasurement" placeholder="Inside Leg" />
-<input type="number" @bind="newMeasurements.P_Q_BodyRiseMeasurement" placeholder="Body Rise" />
-<input type="number" @bind="newMeasurements.R_CloseWristMeasurement" placeholder="Close Wrist" />
+            </MudDataGrid>
+        </MudCardContent>
 
-<button @onclick="AddClient">Add Client</button>
+        <!-- Add/Edit Form Section (Inside the same card) -->
+        <MudCollapse Expanded="showForm">
+            <MudCardContent>
+                <MudForm Model="editingClient" IsValid="@isValid">
+                    <MudTextField Label="Name" @bind-Value="editingClient.Name" Required="true" />
+                    <MudTextField Label="Phone Number" @bind-Value="editingClient.PhoneNumber" />
+                    <MudTextField Label="Notes" @bind-Value="editingClient.Notes" />
+
+                    <MudText Typo="Typo.subtitle1">Measurements</MudText>
+                    <MudTextField Label="Chest" @bind-Value="editingMeasurements.A_ChestMeasurement" InputType="InputType.Number" />
+                    <MudTextField Label="Waist" @bind-Value="editingMeasurements.C_WaistMeasurement" InputType="InputType.Number" />
+                    <MudTextField Label="Trouser" @bind-Value="editingMeasurements.D_TrouserMeasurement" InputType="InputType.Number" />
+
+                    <MudAlert Severity="Severity.Error" Dense="true" Show="@(!isValid)">
+                        Please fill in required fields.
+                    </MudAlert>
+                </MudForm>
+            </MudCardContent>
+
+            <MudCardActions>
+                <MudButton Color="Color.Primary" OnClick="SaveClient" Disabled="!isValid">Save</MudButton>
+                <MudButton Color="Color.Secondary" OnClick="ToggleForm">Cancel</MudButton>
+            </MudCardActions>
+        </MudCollapse>
+    </MudCard>
+
+
+</MudContainer>
 
 @code {
-    private List<ClientInfo> clients = new List<ClientInfo>();
-    private int? editingClientId = null;
-    private string editName = "";
-    private string editNotes = "";
+    private List<ClientInfo> clients = new();
+    private string _quickFilter = "";
+    private HashSet<ClientInfo> _selectedItems = new();
 
-    // New client input fields
-    private string newClientName = "";
-    private string newClientNotes = "";
 
-    private ClientMeasurements newMeasurements = new ClientMeasurements(); // New object for measurements
-    private ClientMeasurements editMeasurements = new ClientMeasurements();
+    private bool showForm = false;
+
+
+    private ClientInfo editingClient = new();
+    private ClientMeasurements editingMeasurements = new();
+
+    private bool isValid => !string.IsNullOrWhiteSpace(editingClient.Name);
 
     protected override async Task OnInitializedAsync()
     {
         clients = await ClientService.GetClientsAsync();
     }
 
-    private async Task AddClient()
+    private void ToggleForm()
     {
-        await ClientService.AddClientAsync(newClientName, newClientNotes, new List<ClientMeasurements> { newMeasurements });
-        clients = await ClientService.GetClientsAsync();
-
-        // Reset Input Fields
-        newClientName = "";
-        newClientNotes = "";
-        newMeasurements = new ClientMeasurements(); // Reset measurements
+        showForm = !showForm;
+        if (!showForm) ResetForm();
+    }
+    
+    private void ResetForm()
+    {
+        editingClient = new();
+        editingMeasurements = new();
     }
 
-    private async Task DeleteClient(int clientId)
-    {
-        await ClientService.DeleteClientAsync(clientId);
-        clients = await ClientService.GetClientsAsync(); // Refresh list after deletion
-    }
     private void EditClient(ClientInfo client)
     {
-        editingClientId = client.Id;
-        editName = client.Name;
-        editNotes = client.Notes;
-
-        // Extract the first measurement from the list, or create a new one if none exist
-        editMeasurements = client.Measurements?.FirstOrDefault() ?? new ClientMeasurements();
+        editingClient = client;
+        editingMeasurements = client.Measurements.FirstOrDefault() ?? new();
+        showForm = true;
     }
 
     private async Task SaveClient()
     {
-        if (editingClientId != null)
+        if (isValid)
         {
-            var client = clients.FirstOrDefault(c => c.Id == editingClientId);
-            if (client != null && client.Measurements.Any())
+            if (editingClient.Id == 0)
             {
-                var measurement = client.Measurements.First();
-
-                // Update the measurement values
-                measurement.A_ChestMeasurement = editMeasurements.A_ChestMeasurement;
-                measurement.B_SeatMeasurement = editMeasurements.B_SeatMeasurement;
-                measurement.C_WaistMeasurement = editMeasurements.C_WaistMeasurement;
-                measurement.D_TrouserMeasurement = editMeasurements.D_TrouserMeasurement;
-                measurement.E_F_HalfBackMeasurement = editMeasurements.E_F_HalfBackMeasurement;
-                measurement.E_I_SleeveLengthTwoPieceMeasurement = editMeasurements.E_I_SleeveLengthTwoPieceMeasurement;
-                measurement.G_H_BackNeckToWaistMeasurement = editMeasurements.G_H_BackNeckToWaistMeasurement;
-                measurement.G_I_SyceDepthMeasurement = editMeasurements.G_I_SyceDepthMeasurement;
-                measurement.I_L_SleeveLengthOnePieceMeasurement = editMeasurements.I_L_SleeveLengthOnePieceMeasurement;
-                measurement.N_InsideLegMeasurement = editMeasurements.N_InsideLegMeasurement;
-                measurement.P_Q_BodyRiseMeasurement = editMeasurements.P_Q_BodyRiseMeasurement;
-                measurement.R_CloseWristMeasurement = editMeasurements.R_CloseWristMeasurement;
-
-                await ClientService.UpdateClientAsync(editingClientId.Value, editName, editNotes, measurement);
+                // Add new client
+                await ClientService.AddClientAsync(editingClient.Name, editingClient.Notes, new List<ClientMeasurements> { editingMeasurements });
             }
-            else if (client != null)
+            else
             {
-                // If no measurements exist, add new measurements
-                client.Measurements.Add(new ClientMeasurements
-                    {
-                        A_ChestMeasurement = editMeasurements.A_ChestMeasurement,
-                        B_SeatMeasurement = editMeasurements.B_SeatMeasurement,
-                        C_WaistMeasurement = editMeasurements.C_WaistMeasurement,
-                        D_TrouserMeasurement = editMeasurements.D_TrouserMeasurement,
-                        E_F_HalfBackMeasurement = editMeasurements.E_F_HalfBackMeasurement,
-                        E_I_SleeveLengthTwoPieceMeasurement = editMeasurements.E_I_SleeveLengthTwoPieceMeasurement,
-                        G_H_BackNeckToWaistMeasurement = editMeasurements.G_H_BackNeckToWaistMeasurement,
-                        G_I_SyceDepthMeasurement = editMeasurements.G_I_SyceDepthMeasurement,
-                        I_L_SleeveLengthOnePieceMeasurement = editMeasurements.I_L_SleeveLengthOnePieceMeasurement,
-                        N_InsideLegMeasurement = editMeasurements.N_InsideLegMeasurement,
-                        P_Q_BodyRiseMeasurement = editMeasurements.P_Q_BodyRiseMeasurement,
-                        R_CloseWristMeasurement = editMeasurements.R_CloseWristMeasurement
-                    });
-
-                await ClientService.UpdateClientAsync(editingClientId.Value, editName, editNotes, client.Measurements.First());
+                // Update existing client
+                await ClientService.UpdateClientAsync(editingClient.Id, editingClient.Name, editingClient.Notes, editingMeasurements);
             }
-
-            clients = await ClientService.GetClientsAsync(); // Refresh list
-            editingClientId = null; // Exit edit mode
+            clients = await ClientService.GetClientsAsync();
+            ToggleForm();
         }
     }
 
-
-
-    private void CancelEdit()
+    private async Task DeleteClient(ClientInfo client)
     {
-        editingClientId = null; // Cancel edit mode
+        Console.WriteLine($"Deleting: {client.Name}");
+        await ClientService.DeleteClientAsync(client.Id);
+        clients = await ClientService.GetClientsAsync(); // Refresh list after delete
+    }
+
+    private void SelectedItemsChanged(HashSet<ClientInfo> selectedItems)
+    {
+        _selectedItems = selectedItems;
+    }
+
+    private bool FilterClients(ClientInfo client)
+    {
+        return string.IsNullOrWhiteSpace(_quickFilter) ||
+               client.Name.Contains(_quickFilter, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -44,13 +44,14 @@ namespace SideSeams
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ClientContext>();
-                db.Database.EnsureCreated();
+                db.Database.EnsureCreated(); // ✅ This ensures tables exist
+                db.Database.Migrate();
             }
-            RunTestAsync(app.Services);
+            RunTestAsync(app.Services).Wait();
 
             return app;
         }
-        private static async void RunTestAsync(IServiceProvider services)
+        private static async Task RunTestAsync(IServiceProvider services)
         {
             await TestClientRepository.RunTests(services);
         }
