@@ -47,13 +47,13 @@ namespace SideSeams
                 db.Database.EnsureCreated(); // ✅ This ensures tables exist
                 db.Database.Migrate();
             }
-            RunTestAsync(app.Services).Wait();
+            //RunTestAsync(app.Services).Wait();
 
             return app;
         }
-        private static async Task RunTestAsync(IServiceProvider services)
-        {
-            await TestClientRepository.RunTests(services);
-        }
+        //private static async Task RunTestAsync(IServiceProvider services)
+        //{
+        //    await TestClientRepository.RunTests(services);
+        //}
     }
 }
